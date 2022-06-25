@@ -45,20 +45,27 @@ class Player(py.sprite.Sprite):
 class Background(py.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = py.image.load('images/green.png').convert_alpha()
+        self.image = py.image.load('images/1.png').convert_alpha()
         self.rect = self.image.get_rect(topleft = (0, 0))
 
     def render(self):
-        pass
+        if bg.sprite.rect.top > 0 and bg.sprite.rect.top < 251:
+            self.image = py.image.load('images/1.png').convert_alpha()
+        if bg.sprite.rect.top > 250 and bg.sprite.rect.top < 501:
+            self.image = py.image.load('images/2.png').convert_alpha()
+        if bg.sprite.rect.top > 500 and bg.sprite.rect.top < 751:
+            self.image = py.image.load('images/3.png').convert_alpha()
+        if bg.sprite.rect.top > 750 and bg.sprite.rect.top < 1001:
+            self.image = py.image.load('images/4.png').convert_alpha()
 
     def update(self):
         self.render()
 
 py.init()
 screen = py.display.set_mode((HEIGHT, WIDTH))
-geogame_icon = py.image.load('./images/globe.png').convert_alpha()
-py.display.set_icon(geogame_icon)
-py.display.set_caption('Geogame')
+geojets_icon = py.image.load('./images/globe.png').convert_alpha()
+py.display.set_icon(geojets_icon)
+py.display.set_caption('Geo Jets!')
 py.mouse.set_visible(False)
 clock = py.time.Clock()
 game_active = True
