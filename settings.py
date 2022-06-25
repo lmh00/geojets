@@ -1,0 +1,3 @@
+HEIGHT, WIDTH = 800, 600
+FPS = 60
+BGCOLOR = 'skyblue'
