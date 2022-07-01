@@ -1,23 +1,20 @@
 import pygame as py
 from sys import exit
 import math
+from init import*
 from settings import *
 
 class Background(py.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = py.image.load('images/bg/13.png').convert_alpha()
+        self.image = bg13
         self.rect = self.image.get_rect()
-        self.x = 2000
-        self.y = 2000
-
-    def update(self, px, py):
-        self.rect.topleft = ((px - self.x) * -1, (py - self.y) * -1)
+        self.rect.topleft = ((2500 - 2000) * -1, (2500 - 2000) * -1)
 
 class Cursor(py.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = py.image.load('images/cursor.png').convert_alpha()
+        self.image = cursor_icon
         self.rect = self.image.get_rect()
 
     def update(self):
@@ -26,7 +23,7 @@ class Cursor(py.sprite.Sprite):
 class Player(py.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.img = py.image.load('images/jet.png').convert_alpha()
+        self.img = jet_icon
         self.image = self.img
         self.rect = self.image.get_rect(center = (HEIGHT / 2, WIDTH / 2))
         self.x = 2500
@@ -55,16 +52,6 @@ class Player(py.sprite.Sprite):
         self.move()
         self.rotate()
 
-py.init()
-screen = py.display.set_mode((HEIGHT, WIDTH))
-geojets_icon = py.image.load('images/globe.png').convert_alpha()
-py.display.set_icon(geojets_icon)
-py.display.set_caption('Geo Jets!')
-py.mouse.set_visible(False)
-clock = py.time.Clock()
-game_active = True
-font = py.font.SysFont("Arial" , 18 , bold = True)
-
 background = py.sprite.GroupSingle()
 background.add(Background())
 player = py.sprite.GroupSingle()
@@ -84,12 +71,12 @@ while game_active:
         screen.blit(fps_t,(0,0))                                        #####
 
     screen.fill(BGCOLOR)
+    background.update()
     background.draw(screen)
-    background.update(player.sprite.x, player.sprite.y)
-    player.draw(screen)
     player.update()
-    cursor.draw(screen)
+    player.draw(screen)
     cursor.update()
+    cursor.draw(screen)
     fps_counter()                                                       #####
 
     py.display.update()
