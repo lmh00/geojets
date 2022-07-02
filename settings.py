@@ -1,4 +1,0 @@
-HEIGHT = 1000
-WIDTH = 1000
-FPS = 60
-BGCOLOR = 'skyblue'

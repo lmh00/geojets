@@ -1,34 +1,11 @@
 import pygame as py
-from init import *
-from settings import *
-from images import *
 from sys import exit
 import math
 
-# Init
-py.init()
-screen = py.display.set_mode((HEIGHT, WIDTH))
-font = py.font.SysFont("Arial" , 18 , bold = True)
-clock = py.time.Clock()
-py.mouse.set_visible(False)
-py.display.set_icon(logo_icon)
-py.display.set_caption('Geo Jets!')
-game_active = True
-
 # Classes
 class Background():
-    def __init__(self):
-        super().__init__()
-        self.x1 = 2000
-        self.x2 = self.x1 + 500
-        self.y1 = 2000
-        self.y2 = self.y1 + 500
-        self.img = bg13
-
     def update(self, px, py):
-        if self.x1 < px < self.x2 and self.y1 < py < self.y2:
-            screen.blit(self.img, ((px - self.x1) * -1, (py - self.y1) * -1))
-            print((px - self.x1) * -1, (py - self.y1) * -1)
+        screen.blit(map, (0, 0), (px, py, WIDTH, HEIGHT))
 
 class Cursor(py.sprite.Sprite):
     def __init__(self):
@@ -44,10 +21,10 @@ class Player(py.sprite.Sprite):
         super().__init__()
         self.img = jet_icon
         self.image = self.img
-        self.rect = self.image.get_rect(center = (HEIGHT / 2, WIDTH / 2))
-        self.x = 2500
-        self.y = 2500
-        self.speed = 3
+        self.rect = self.image.get_rect(center = (WIDTH / 2, HEIGHT / 2))
+        self.x = 0
+        self.y = 0
+        self.speed = 10
 
     def move(self):
         pressed = py.key.get_pressed()
@@ -70,6 +47,28 @@ class Player(py.sprite.Sprite):
     def update(self):
         self.move()
         self.rotate()
+
+# Settings
+WIDTH = 1200
+HEIGHT = 800
+FPS = 60
+BGCOLOR = 'skyblue'
+
+# Init
+py.init()
+screen = py.display.set_mode((WIDTH, HEIGHT))
+font = py.font.SysFont("Arial" , 18 , bold = True)
+clock = py.time.Clock()
+py.mouse.set_visible(False)
+py.display.set_caption('Geo Jets!')
+game_active = True
+
+# Background Images
+map = py.image.load('images/bg/eq_earth.png').convert_alpha()
+cursor_icon = py.image.load('images/cursor.png').convert_alpha()
+jet_icon = py.image.load('images/jet.png').convert_alpha()
+logo_icon = py.image.load('images/globe.png').convert_alpha()
+py.display.set_icon(logo_icon)
 
 #Groups
 background = Background()
