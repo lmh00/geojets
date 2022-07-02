@@ -1,15 +1,34 @@
 import pygame as py
+from init import *
+from settings import *
+from images import *
 from sys import exit
 import math
-from init import*
-from settings import *
 
-class Background(py.sprite.Sprite):
+# Init
+py.init()
+screen = py.display.set_mode((HEIGHT, WIDTH))
+font = py.font.SysFont("Arial" , 18 , bold = True)
+clock = py.time.Clock()
+py.mouse.set_visible(False)
+py.display.set_icon(logo_icon)
+py.display.set_caption('Geo Jets!')
+game_active = True
+
+# Classes
+class Background():
     def __init__(self):
         super().__init__()
-        self.image = bg13
-        self.rect = self.image.get_rect()
-        self.rect.topleft = ((2500 - 2000) * -1, (2500 - 2000) * -1)
+        self.x1 = 2000
+        self.x2 = self.x1 + 500
+        self.y1 = 2000
+        self.y2 = self.y1 + 500
+        self.img = bg13
+
+    def update(self, px, py):
+        if self.x1 < px < self.x2 and self.y1 < py < self.y2:
+            screen.blit(self.img, ((px - self.x1) * -1, (py - self.y1) * -1))
+            print((px - self.x1) * -1, (py - self.y1) * -1)
 
 class Cursor(py.sprite.Sprite):
     def __init__(self):
@@ -52,13 +71,14 @@ class Player(py.sprite.Sprite):
         self.move()
         self.rotate()
 
-background = py.sprite.GroupSingle()
-background.add(Background())
+#Groups
+background = Background()
 player = py.sprite.GroupSingle()
 player.add(Player())
 cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
 
+# Game loop
 while game_active:
     for event in py.event.get():
         if event.type == py.QUIT:
@@ -71,8 +91,7 @@ while game_active:
         screen.blit(fps_t,(0,0))                                        #####
 
     screen.fill(BGCOLOR)
-    background.update()
-    background.draw(screen)
+    background.update(player.sprite.x, player.sprite.y)
     player.update()
     player.draw(screen)
     cursor.update()
