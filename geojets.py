@@ -13,8 +13,17 @@ class Cursor(py.sprite.Sprite):
         self.image = cursor_icon
         self.rect = self.image.get_rect()
 
-    def update(self):
+    def move(self):
         self.rect.center = py.mouse.get_pos()
+
+    def update(self):
+        self.move()
+
+class FPS_Counter():                                                    #####
+    def update(self):                                                   #####
+        fps = str(int(clock.get_fps()))                                 #####
+        fps_t = font.render(fps , 1, py.Color("RED"))                   #####
+        screen.blit(fps_t,(0,0))                                        #####
 
 class Player(py.sprite.Sprite):
     def __init__(self):
@@ -22,8 +31,8 @@ class Player(py.sprite.Sprite):
         self.img = jet_icon
         self.image = self.img
         self.rect = self.image.get_rect(center = (WIDTH / 2, HEIGHT / 2))
-        self.x = 0
-        self.y = 0
+        self.x = 5000
+        self.y = 5000
         self.speed = 10
 
     def move(self):
@@ -56,14 +65,14 @@ BGCOLOR = 'skyblue'
 
 # Init
 py.init()
-screen = py.display.set_mode((WIDTH, HEIGHT))
+screen = py.display.set_mode((WIDTH, HEIGHT), py.HWSURFACE | py.DOUBLEBUF | py.SCALED, vsync=1)
 font = py.font.SysFont("Arial" , 18 , bold = True)
 clock = py.time.Clock()
 py.mouse.set_visible(False)
 py.display.set_caption('Geo Jets!')
 game_active = True
 
-# Background Images
+# Images
 map = py.image.load('images/bg/eq_earth.png').convert_alpha()
 cursor_icon = py.image.load('images/cursor.png').convert_alpha()
 jet_icon = py.image.load('images/jet.png').convert_alpha()
@@ -76,6 +85,7 @@ player = py.sprite.GroupSingle()
 player.add(Player())
 cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
+fps_counter = FPS_Counter()
 
 # Game loop
 while game_active:
@@ -84,18 +94,14 @@ while game_active:
             py.quit()
             exit()
 
-    def fps_counter():                                                  #####
-        fps = str(int(clock.get_fps()))                                 #####
-        fps_t = font.render(fps , 1, py.Color("RED"))                   #####
-        screen.blit(fps_t,(0,0))                                        #####
-
     screen.fill(BGCOLOR)
     background.update(player.sprite.x, player.sprite.y)
-    player.update()
     player.draw(screen)
-    cursor.update()
+    player.update()
     cursor.draw(screen)
-    fps_counter()                                                       #####
+    cursor.update()
+    fps_counter.update()                                                       #####
 
     py.display.update()
+    py.event.pump()
     clock.tick(FPS)
