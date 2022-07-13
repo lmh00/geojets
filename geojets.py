@@ -33,6 +33,7 @@ class Player(py.sprite.Sprite):
         self.rect = self.image.get_rect(center = (WIDTH / 2, HEIGHT / 2))
         self.x = 5000
         self.y = 5000
+        self.speed = 1
 
     def turn(self):
         pressed = py.key.get_pressed()
@@ -54,9 +55,9 @@ class Player(py.sprite.Sprite):
 
     def shoot(self):
         click = py.mouse.get_pressed() == (1, 0, 0)
-        mouse = py.mouse.get_pos()
+        x, y = py.mouse.get_pos()
         if click:
-            b = Bullet(self.x, self.y, mouse[0], mouse[1])
+            b = Bullet(self.x, self.y, x, y)
             bullets.append(b)
 
     def update(self):
@@ -64,20 +65,33 @@ class Player(py.sprite.Sprite):
         self.rotate()
         self.shoot()
 
-class Bullet(py.sprite.Sprite):
-    def __init__(self, px, py, mx, my):
+class Bullet():
+    def __init__(self, x, y, mx, my):
         super().__init__()
-        self.img = bullet_icon
-        self.image = self.img
-        self.rect = self.image.get_rect(center = (WIDTH / 2, HEIGHT / 2))
+        self.x = x
+        self.y = y
+        self.color = 'red'
+        self.width = 20
+        self.height = 20
+        self.rect = py.Rect(self.x, self.y, self.width, self.height)
         self.speed = 1
-        angle = math.atan2(my - px, mx - py)
-        self.dx = math.cos(angle) * self.speed
-        self.dy = math.sin(angle) * self.speed
+        self.angle = math.atan2(my - y, mx - x)
+        self.dx = math.cos(self.angle) * self.speed
+        self.dy = math.sin(self.angle) * self.speed
 
     def move(self):
-        self.rect.x = self.rect.x + int(self.dx)
-        self.rect.y = self.rect.y + int(self.dy)
+        self.x = self.x + self.dx
+        self.y = self.y + self.dy
+        self.rect.x = int(self.x)
+        self.rect.y = int(self.y)
+
+    def draw(self):
+        py.draw.rect(screen, self.color, self.rect)
+
+    def update(self):
+        self.draw()
+        self.move()
+        print(bullets)
 
 # Settings
 WIDTH = 1200
@@ -96,7 +110,6 @@ game_active = True
 
 # Images -- you can put this all in one image
 map = py.image.load('images/bg/eq_earth.png').convert_alpha()
-bullet_icon = py.image.load('images/bullet.png').convert_alpha()
 cursor_icon = py.image.load('images/cursor.png').convert_alpha()
 jet_icon = py.image.load('images/jet.png').convert_alpha()
 logo_icon = py.image.load('images/globe.png').convert_alpha()
@@ -111,7 +124,6 @@ player = py.sprite.GroupSingle()
 player.add(Player())
 cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
-bullet = py.sprite.GroupSingle()
 fps_counter = FPS_Counter()
 
 # Game loop
@@ -130,7 +142,7 @@ while game_active:
     fps_counter.update()
 
     for b in bullets:
-        b.move()
+        b.update()
 
     py.display.update()
     py.event.pump()
