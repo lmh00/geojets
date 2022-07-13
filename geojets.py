@@ -33,7 +33,7 @@ class Player(py.sprite.Sprite):
         self.rect = self.image.get_rect(center = (WIDTH / 2, HEIGHT / 2))
         self.x = 5000
         self.y = 5000
-        self.speed = 1
+        self.speed = 5
 
     def turn(self):
         pressed = py.key.get_pressed()
@@ -57,7 +57,7 @@ class Player(py.sprite.Sprite):
         click = py.mouse.get_pressed() == (1, 0, 0)
         x, y = py.mouse.get_pos()
         if click:
-            b = Bullet(self.x, self.y, x, y)
+            b = Bullet(x, y)
             bullets.append(b)
 
     def update(self):
@@ -66,16 +66,18 @@ class Player(py.sprite.Sprite):
         self.shoot()
 
 class Bullet():
-    def __init__(self, x, y, mx, my):
+    def __init__(self, mx, my):
         super().__init__()
-        self.x = x
-        self.y = y
-        self.color = 'red'
-        self.width = 20
-        self.height = 20
+        self.x = (WIDTH / 2)
+        self.y = (HEIGHT / 2)
+        self.mx = mx
+        self.my = my
+        self.color = 'black'
+        self.width = 3
+        self.height = 3
         self.rect = py.Rect(self.x, self.y, self.width, self.height)
-        self.speed = 1
-        self.angle = math.atan2(my - y, mx - x)
+        self.speed = 10
+        self.angle = math.atan2(self.my - self.y, self.mx - self.x)
         self.dx = math.cos(self.angle) * self.speed
         self.dy = math.sin(self.angle) * self.speed
 
@@ -89,9 +91,8 @@ class Bullet():
         py.draw.rect(screen, self.color, self.rect)
 
     def update(self):
-        self.draw()
         self.move()
-        print(bullets)
+        self.draw()
 
 # Settings
 WIDTH = 1200
@@ -135,14 +136,13 @@ while game_active:
 
     screen.fill(BGCOLOR)
     background.update(player.sprite.x, player.sprite.y)
+    for b in bullets:
+        b.update()
     player.draw(screen)
     player.update()
     cursor.draw(screen)
     cursor.update()
     fps_counter.update()
-
-    for b in bullets:
-        b.update()
 
     py.display.update()
     py.event.pump()
