@@ -56,6 +56,8 @@ class Player(py.sprite.Sprite):
     def shoot(self):
         click = py.mouse.get_pressed() == (1, 0, 0)
         x, y = py.mouse.get_pos()
+        firerate = 0
+
         if click:
             b = Bullet(x, y)
             bullets.append(b)
@@ -76,7 +78,7 @@ class Bullet():
         self.width = 3
         self.height = 3
         self.rect = py.Rect(self.x, self.y, self.width, self.height)
-        self.speed = 10
+        self.speed = 20
         self.angle = math.atan2(self.my - self.y, self.mx - self.x)
         self.dx = math.cos(self.angle) * self.speed
         self.dy = math.sin(self.angle) * self.speed
