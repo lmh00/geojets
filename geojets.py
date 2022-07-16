@@ -53,19 +53,9 @@ class Player(py.sprite.Sprite):
         self.image = py.transform.rotate(self.img, angleDeg)
         self.rect = self.image.get_rect(center = (self.rect.centerx, self.rect.centery))
 
-    def shoot(self):
-        click = py.mouse.get_pressed() == (1, 0, 0)
-        x, y = py.mouse.get_pos()
-        firerate = 0
-
-        if click:
-            b = Bullet(x, y)
-            bullets.append(b)
-
     def update(self):
         self.turn()
         self.rotate()
-        self.shoot()
 
 class Bullet():
     def __init__(self, mx, my):
@@ -111,7 +101,7 @@ py.mouse.set_visible(False)
 py.display.set_caption('Geo Jets!')
 game_active = True
 
-# Images -- you can put this all in one image
+# Images -- you can put this all in one image when finished
 map = py.image.load('images/bg/eq_earth.png').convert_alpha()
 cursor_icon = py.image.load('images/cursor.png').convert_alpha()
 jet_icon = py.image.load('images/jet.png').convert_alpha()
@@ -132,18 +122,22 @@ fps_counter = FPS_Counter()
 # Game loop
 while game_active:
     for event in py.event.get():
+        x, y = py.mouse.get_pos()
         if event.type == py.QUIT:
             py.quit()
             exit()
+        if event.type == py.MOUSEBUTTONDOWN:
+            b = Bullet(x, y)
+            bullets.append(b)
 
     screen.fill(BGCOLOR)
     background.update(player.sprite.x, player.sprite.y)
-    for b in bullets:
-        b.update()
     player.draw(screen)
     player.update()
     cursor.draw(screen)
     cursor.update()
+    for b in bullets:
+        b.update()
     fps_counter.update()
 
     py.display.update()
