@@ -1,6 +1,7 @@
 import pygame as py
 from sys import exit
 import math
+import random
 
 # Classes
 class Background():
@@ -34,6 +35,7 @@ class Player(py.sprite.Sprite):
         self.x = 5000
         self.y = 5000
         self.speed = 5
+        self.load = 5
 
     def turn(self):
         pressed = py.key.get_pressed()
@@ -53,9 +55,18 @@ class Player(py.sprite.Sprite):
         self.image = py.transform.rotate(self.img, angleDeg)
         self.rect = self.image.get_rect(center = (self.rect.centerx, self.rect.centery))
 
+    def shoot(self):
+        if py.mouse.get_pressed() == (1, 0, 0):
+            self.load += 1
+            if self.load > 5:
+                b = Bullet(x, y)
+                bullets.append(b)
+                self.load = 0
+
     def update(self):
         self.turn()
         self.rotate()
+        self.shoot()
 
 class Bullet():
     def __init__(self, mx, my):
@@ -68,10 +79,15 @@ class Bullet():
         self.width = 3
         self.height = 3
         self.rect = py.Rect(self.x, self.y, self.width, self.height)
-        self.speed = 20
+        self.speed = random.randrange(30, 50)
         self.angle = math.atan2(self.my - self.y, self.mx - self.x)
         self.dx = math.cos(self.angle) * self.speed
         self.dy = math.sin(self.angle) * self.speed
+        self.begin = py.time.get_ticks()
+
+    def end(self, b):
+        if py.time.get_ticks() > (self.begin + 1000):
+            bullets.pop(b)
 
     def move(self):
         self.x = self.x + self.dx
@@ -82,7 +98,8 @@ class Bullet():
     def draw(self):
         py.draw.rect(screen, self.color, self.rect)
 
-    def update(self):
+    def update(self, b):
+        self.end(bullets.index(b))
         self.move()
         self.draw()
 
@@ -90,7 +107,7 @@ class Bullet():
 WIDTH = 1200
 HEIGHT = 800
 FPS = 60
-BGCOLOR = 'skyblue'
+BGCOLOR = 'red'
 
 # Init
 py.init()
@@ -119,16 +136,16 @@ cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
 fps_counter = FPS_Counter()
 
+FIRERATE = 1001
+
 # Game loop
 while game_active:
+    x, y = py.mouse.get_pos()
+
     for event in py.event.get():
-        x, y = py.mouse.get_pos()
         if event.type == py.QUIT:
             py.quit()
             exit()
-        if event.type == py.MOUSEBUTTONDOWN:
-            b = Bullet(x, y)
-            bullets.append(b)
 
     screen.fill(BGCOLOR)
     background.update(player.sprite.x, player.sprite.y)
@@ -136,9 +153,10 @@ while game_active:
     player.update()
     cursor.draw(screen)
     cursor.update()
-    for b in bullets:
-        b.update()
     fps_counter.update()
+
+    for b in bullets:
+        b.update(b)
 
     py.display.update()
     py.event.pump()
