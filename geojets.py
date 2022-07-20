@@ -1,12 +1,11 @@
 import pygame as py
 from sys import exit
 import math
-import random
 
 # Classes
 class Background():
     def update(self, px, py):
-        screen.blit(map, (0, 0), (px, py, WIDTH, HEIGHT))
+        screen.blit(map, BG_POS, (px, py, SCREEN_W, SCREEN_H))
 
 class Cursor(py.sprite.Sprite):
     def __init__(self):
@@ -14,28 +13,25 @@ class Cursor(py.sprite.Sprite):
         self.image = cursor_icon
         self.rect = self.image.get_rect()
 
-    def move(self):
-        self.rect.center = py.mouse.get_pos()
-
     def update(self):
-        self.move()
+        self.rect.center = py.mouse.get_pos()
 
 class FPS_Counter():
     def update(self):
         fps = str(int(clock.get_fps()))
         fps_t = font.render(fps , 1, py.Color("RED"))
-        screen.blit(fps_t,(0,0))
+        screen.blit(fps_t, (0, 0))
 
 class Player(py.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.img = jet_icon
         self.image = self.img
-        self.rect = self.image.get_rect(center = (WIDTH / 2, HEIGHT / 2))
+        self.rect = self.image.get_rect(center = (SCREEN_CEN_W, SCREEN_CEN_H))
         self.x = 5000
         self.y = 5000
-        self.speed = 5
-        self.load = 5
+        self.speed = PLYR_SPEED
+        self.load = LOAD_SPEED
 
     def turn(self):
         pressed = py.key.get_pressed()
@@ -51,17 +47,19 @@ class Player(py.sprite.Sprite):
     def rotate(self):
         mx, my = py.mouse.get_pos()
         angleRad = math.atan2(self.rect.centery - my, mx - self.rect.centerx)
-        angleDeg = math.degrees(angleRad) - 90
+        angleDeg = math.degrees(angleRad) - 90 # sprite is angled wrong w/o -90
         self.image = py.transform.rotate(self.img, angleDeg)
         self.rect = self.image.get_rect(center = (self.rect.centerx, self.rect.centery))
 
     def shoot(self):
         if py.mouse.get_pressed() == (1, 0, 0):
             self.load += 1
-            if self.load > 5:
+            if self.load > LOAD_SPEED:
                 b = Bullet(x, y)
                 bullets.append(b)
                 self.load = 0
+        else:
+            self.load = LOAD_SPEED
 
     def update(self):
         self.turn()
@@ -71,22 +69,18 @@ class Player(py.sprite.Sprite):
 class Bullet():
     def __init__(self, mx, my):
         super().__init__()
-        self.x = (WIDTH / 2)
-        self.y = (HEIGHT / 2)
+        self.x = (SCREEN_CEN_W)
+        self.y = (SCREEN_CEN_H)
         self.mx = mx
         self.my = my
-        self.color = 'black'
-        self.width = 3
-        self.height = 3
-        self.rect = py.Rect(self.x, self.y, self.width, self.height)
-        self.speed = random.randrange(30, 50)
+        self.rect = py.Rect(self.x, self.y, BULLET_SIZE, BULLET_SIZE)
         self.angle = math.atan2(self.my - self.y, self.mx - self.x)
-        self.dx = math.cos(self.angle) * self.speed
-        self.dy = math.sin(self.angle) * self.speed
+        self.dx = math.cos(self.angle) * BULLET_SPEED
+        self.dy = math.sin(self.angle) * BULLET_SPEED
         self.begin = py.time.get_ticks()
 
     def end(self, b):
-        if py.time.get_ticks() > (self.begin + 1000):
+        if py.time.get_ticks() > (self.begin + BULLET_LIFE):
             bullets.pop(b)
 
     def move(self):
@@ -96,7 +90,7 @@ class Bullet():
         self.rect.y = int(self.y)
 
     def draw(self):
-        py.draw.rect(screen, self.color, self.rect)
+        py.draw.rect(screen, BULLET_COLOR, self.rect)
 
     def update(self, b):
         self.end(bullets.index(b))
@@ -104,14 +98,23 @@ class Bullet():
         self.draw()
 
 # Settings
-WIDTH = 1200
-HEIGHT = 800
+SCREEN_W = 1200
+SCREEN_H = 800
+SCREEN_CEN_W = SCREEN_W / 2
+SCREEN_CEN_H = SCREEN_H / 2
 FPS = 60
-BGCOLOR = 'red'
+BG_COLOR = 'red'
+BG_POS = (0, 0)
+PLYR_SPEED = 5
+LOAD_SPEED = 15
+BULLET_COLOR = 'black'
+BULLET_SIZE = 4
+BULLET_SPEED = 20
+BULLET_LIFE = 1000
 
 # Init
 py.init()
-screen = py.display.set_mode((WIDTH, HEIGHT), py.HWSURFACE | py.DOUBLEBUF | py.SCALED, vsync=1)
+screen = py.display.set_mode((SCREEN_W, SCREEN_H), py.HWSURFACE | py.DOUBLEBUF | py.SCALED, vsync=1)
 font = py.font.SysFont("Arial" , 18 , bold = True)
 clock = py.time.Clock()
 py.mouse.set_visible(False)
@@ -136,18 +139,16 @@ cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
 fps_counter = FPS_Counter()
 
-FIRERATE = 1001
-
 # Game loop
 while game_active:
-    x, y = py.mouse.get_pos()
+    x, y = py.mouse.get_pos() # needed for b in bullets
 
     for event in py.event.get():
         if event.type == py.QUIT:
             py.quit()
             exit()
 
-    screen.fill(BGCOLOR)
+    screen.fill(BG_COLOR)
     background.update(player.sprite.x, player.sprite.y)
     player.draw(screen)
     player.update()
