@@ -28,52 +28,28 @@ class Player(py.sprite.Sprite):
         self.img = jet_icon
         self.image = self.img
         self.rect = self.image.get_rect(center = (SCX, SCY))
-        self.x = 100
-        self.y = 100
+        self.x = 5000
+        self.y = 5000
+        self.angle = 0
         self.speed = PLYR_SPEED
         self.load = LOAD_SPEED
 
-    def turn(self):
+    def move(self):
         pressed = py.key.get_pressed()
-        if pressed[py.K_w] and not pressed[py.K_a] or pressed[py.K_w] and not pressed[py.K_s]:
-            self.image = py.transform.rotate(self.img, 0)
-            self.rect = self.image.get_rect(center = (SCX, SCY))
-            self.y -= self.speed
-        if pressed[py.K_s] and not pressed[py.K_a] or pressed[py.K_s] and not pressed[py.K_d]:
-            self.image = py.transform.rotate(self.img, 180)
-            self.rect = self.image.get_rect(center = (SCX, SCY))
-            self.y += self.speed
-        if pressed[py.K_a] and not pressed[py.K_w] or pressed[py.K_a] and not pressed[py.K_s]:
-            self.image = py.transform.rotate(self.img, 90)
-            self.rect = self.image.get_rect(center = (SCX, SCY))
-            self.x -= self.speed
-        if pressed[py.K_d] and not pressed[py.K_w] or pressed[py.K_d] and not pressed[py.K_s]:
-            self.image = py.transform.rotate(self.img, -90)
-            self.rect = self.image.get_rect(center = (SCX, SCY))
-            self.x += self.speed
-        if pressed[py.K_w] and pressed[py.K_a]:
-            self.image = py.transform.rotate(self.img, 45)
-            self.rect = self.image.get_rect(center = (SCX, SCY))
-            print('NW')
-        if pressed[py.K_w] and pressed[py.K_d]:
-            self.image = py.transform.rotate(self.img, -45)
-            self.rect = self.image.get_rect(center = (SCX, SCY))
-            print('NE')
-        if pressed[py.K_s] and pressed[py.K_a]:
-            self.image = py.transform.rotate(self.img, 135)
-            self.rect = self.image.get_rect(center = (SCX, SCY))
-            print('SW')
-        if pressed[py.K_s] and pressed[py.K_d]:
-            self.image = py.transform.rotate(self.img, 225)
-            self.rect = self.image.get_rect(center = (SCX, SCY))
-            print('SE')
-
-    # def rotate(self):
-    #     mx, my = py.mouse.get_pos()
-    #     angleRad = math.atan2(self.rect.centery - my, mx - self.rect.centerx)
-    #     angleDeg = math.degrees(angleRad) - 90 # sprite is angled wrong w/o -90
-    #     self.image = py.transform.rotate(self.img, angleDeg)
-    #     self.rect = self.image.get_rect(center = (self.rect.centerx, self.rect.centery))
+        if pressed[py.K_w]:
+            self.speed += 0.1
+        if pressed[py.K_s]:
+            self.speed -= 0.1
+        if pressed[py.K_a]:
+            self.angle += 1
+        if pressed[py.K_d]:
+            self.angle -= 1
+        self.vx = self.speed * math.sin(math.radians(self.angle))
+        self.vy = self.speed * math.cos(math.radians(self.angle))
+        self.x -= self.vx
+        self.y -= self.vy
+        self.image = py.transform.rotate(self.img, self.angle)
+        self.rect = self.image.get_rect(center = (SCX, SCY))
 
     def shoot(self):
         if py.mouse.get_pressed() == (1, 0, 0):
@@ -86,8 +62,7 @@ class Player(py.sprite.Sprite):
             self.load = LOAD_SPEED
 
     def update(self):
-        self.turn()
-        # self.rotate()
+        self.move()
         self.shoot()
 
 class Bullet():
@@ -162,7 +137,7 @@ game_active = True
 # Images -- you can put this all in one image when finished
 map = py.image.load('images/bg/eq_earth.png').convert_alpha()
 cursor_icon = py.image.load('images/cursor.png').convert_alpha()
-jet_icon = py.image.load('images/N_jet.png').convert_alpha()
+jet_icon = py.image.load('images/jet.png').convert_alpha()
 logo_icon = py.image.load('images/globe.png').convert_alpha()
 py.display.set_icon(logo_icon) # has to come after logo_icon
 
