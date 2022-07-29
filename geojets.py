@@ -5,7 +5,7 @@ import math
 # Classes
 class Background():
     def update(self, px, py):
-        screen.blit(map, BG_POS, (px, py, SCREEN_W, SCREEN_H))
+        screen.blit(map, BG_POS, (-SCX + px, -SCY + py, SW, SH))
 
 class Cursor(py.sprite.Sprite):
     def __init__(self):
@@ -27,9 +27,9 @@ class Player(py.sprite.Sprite):
         super().__init__()
         self.img = jet_icon
         self.image = self.img
-        self.rect = self.image.get_rect(center = (SCREEN_CEN_W, SCREEN_CEN_H))
-        self.x = 5000
-        self.y = 5000
+        self.rect = self.image.get_rect(center = (SCX, SCY))
+        self.x = 100
+        self.y = 100
         self.speed = PLYR_SPEED
         self.load = LOAD_SPEED
 
@@ -69,8 +69,8 @@ class Player(py.sprite.Sprite):
 class Bullet():
     def __init__(self, mx, my):
         super().__init__()
-        self.x = (SCREEN_CEN_W)
-        self.y = (SCREEN_CEN_H)
+        self.x = SCX
+        self.y = SCY
         self.mx = mx
         self.my = my
         self.rect = py.Rect(self.x, self.y, BULLET_SIZE, BULLET_SIZE)
@@ -97,11 +97,25 @@ class Bullet():
         self.move()
         self.draw()
 
+class Enemy(py.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.x = 200
+        self.y = 200
+        self.img = jet_icon
+        self.image = self.img
+        self.speed = PLYR_SPEED
+        self.load = LOAD_SPEED
+
+    def update(self, px, py):
+        self.rect = self.image.get_rect(center = ((self.x + SCX) - px, (self.y + SCY) - py ))
+
+
 # Settings
-SCREEN_W = 1200
-SCREEN_H = 800
-SCREEN_CEN_W = SCREEN_W / 2
-SCREEN_CEN_H = SCREEN_H / 2
+SW = 1200
+SH = 800
+SCX = SW / 2
+SCY = SH / 2
 FPS = 60
 BG_COLOR = 'red'
 BG_POS = (0, 0)
@@ -114,7 +128,7 @@ BULLET_LIFE = 1000
 
 # Init
 py.init()
-screen = py.display.set_mode((SCREEN_W, SCREEN_H), py.HWSURFACE | py.DOUBLEBUF | py.SCALED, vsync=1)
+screen = py.display.set_mode((SW, SH), py.HWSURFACE | py.DOUBLEBUF | py.SCALED, vsync=1)
 font = py.font.SysFont("Arial" , 18 , bold = True)
 clock = py.time.Clock()
 py.mouse.set_visible(False)
@@ -128,16 +142,18 @@ jet_icon = py.image.load('images/jet.png').convert_alpha()
 logo_icon = py.image.load('images/globe.png').convert_alpha()
 py.display.set_icon(logo_icon) # has to come after logo_icon
 
-#Global Variables
-bullets = []
-
 #Groups
 background = Background()
 player = py.sprite.GroupSingle()
 player.add(Player())
+enemy = py.sprite.GroupSingle()
+enemy.add(Enemy())
 cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
 fps_counter = FPS_Counter()
+
+#Global Variables
+bullets = []
 
 # Game loop
 while game_active:
@@ -150,10 +166,12 @@ while game_active:
 
     screen.fill(BG_COLOR)
     background.update(player.sprite.x, player.sprite.y)
-    player.draw(screen)
     player.update()
-    cursor.draw(screen)
+    player.draw(screen)
+    enemy.update(player.sprite.x, player.sprite.y)
+    enemy.draw(screen)
     cursor.update()
+    cursor.draw(screen)
     fps_counter.update()
 
     for b in bullets:
