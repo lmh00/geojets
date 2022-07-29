@@ -4,8 +4,8 @@ import math
 
 # Classes
 class Background():
-    def update(self, px, py):
-        screen.blit(map, BG_POS, (-SCX + px, -SCY + py, SW, SH))
+    def update(self, camX, camY):
+        screen.blit(map, BG_POS, (-SCX + camX, -SCY + camY, SW, SH))
 
 class Cursor(py.sprite.Sprite):
     def __init__(self):
@@ -35,21 +35,45 @@ class Player(py.sprite.Sprite):
 
     def turn(self):
         pressed = py.key.get_pressed()
-        if pressed[py.K_a] or pressed[py.K_LEFT]:
-            self.x -= self.speed
-        if pressed[py.K_d] or pressed[py.K_RIGHT]:
-            self.x += self.speed
-        if pressed[py.K_w] or pressed[py.K_UP]:
+        if pressed[py.K_w] and not pressed[py.K_a] or pressed[py.K_w] and not pressed[py.K_s]:
+            self.image = py.transform.rotate(self.img, 0)
+            self.rect = self.image.get_rect(center = (SCX, SCY))
             self.y -= self.speed
-        if pressed[py.K_s] or pressed[py.K_DOWN]:
+        if pressed[py.K_s] and not pressed[py.K_a] or pressed[py.K_s] and not pressed[py.K_d]:
+            self.image = py.transform.rotate(self.img, 180)
+            self.rect = self.image.get_rect(center = (SCX, SCY))
             self.y += self.speed
+        if pressed[py.K_a] and not pressed[py.K_w] or pressed[py.K_a] and not pressed[py.K_s]:
+            self.image = py.transform.rotate(self.img, 90)
+            self.rect = self.image.get_rect(center = (SCX, SCY))
+            self.x -= self.speed
+        if pressed[py.K_d] and not pressed[py.K_w] or pressed[py.K_d] and not pressed[py.K_s]:
+            self.image = py.transform.rotate(self.img, -90)
+            self.rect = self.image.get_rect(center = (SCX, SCY))
+            self.x += self.speed
+        if pressed[py.K_w] and pressed[py.K_a]:
+            self.image = py.transform.rotate(self.img, 45)
+            self.rect = self.image.get_rect(center = (SCX, SCY))
+            print('NW')
+        if pressed[py.K_w] and pressed[py.K_d]:
+            self.image = py.transform.rotate(self.img, -45)
+            self.rect = self.image.get_rect(center = (SCX, SCY))
+            print('NE')
+        if pressed[py.K_s] and pressed[py.K_a]:
+            self.image = py.transform.rotate(self.img, 135)
+            self.rect = self.image.get_rect(center = (SCX, SCY))
+            print('SW')
+        if pressed[py.K_s] and pressed[py.K_d]:
+            self.image = py.transform.rotate(self.img, 225)
+            self.rect = self.image.get_rect(center = (SCX, SCY))
+            print('SE')
 
-    def rotate(self):
-        mx, my = py.mouse.get_pos()
-        angleRad = math.atan2(self.rect.centery - my, mx - self.rect.centerx)
-        angleDeg = math.degrees(angleRad) - 90 # sprite is angled wrong w/o -90
-        self.image = py.transform.rotate(self.img, angleDeg)
-        self.rect = self.image.get_rect(center = (self.rect.centerx, self.rect.centery))
+    # def rotate(self):
+    #     mx, my = py.mouse.get_pos()
+    #     angleRad = math.atan2(self.rect.centery - my, mx - self.rect.centerx)
+    #     angleDeg = math.degrees(angleRad) - 90 # sprite is angled wrong w/o -90
+    #     self.image = py.transform.rotate(self.img, angleDeg)
+    #     self.rect = self.image.get_rect(center = (self.rect.centerx, self.rect.centery))
 
     def shoot(self):
         if py.mouse.get_pressed() == (1, 0, 0):
@@ -63,7 +87,7 @@ class Player(py.sprite.Sprite):
 
     def update(self):
         self.turn()
-        self.rotate()
+        # self.rotate()
         self.shoot()
 
 class Bullet():
@@ -98,18 +122,18 @@ class Bullet():
         self.draw()
 
 class Enemy(py.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__()
-        self.x = 200
-        self.y = 200
+        self.x = x
+        self.y = y
         self.img = jet_icon
         self.image = self.img
+        self.rect = self.image.get_rect(center = ((self.x + SCX), (self.y + SCY)))
         self.speed = PLYR_SPEED
         self.load = LOAD_SPEED
 
-    def update(self, px, py):
-        self.rect = self.image.get_rect(center = ((self.x + SCX) - px, (self.y + SCY) - py ))
-
+    def update(self, camX, camY):
+        self.rect = self.image.get_rect(center = ((self.x + SCX) - camX, (self.y + SCY) - camY))
 
 # Settings
 SW = 1200
@@ -138,7 +162,7 @@ game_active = True
 # Images -- you can put this all in one image when finished
 map = py.image.load('images/bg/eq_earth.png').convert_alpha()
 cursor_icon = py.image.load('images/cursor.png').convert_alpha()
-jet_icon = py.image.load('images/jet.png').convert_alpha()
+jet_icon = py.image.load('images/N_jet.png').convert_alpha()
 logo_icon = py.image.load('images/globe.png').convert_alpha()
 py.display.set_icon(logo_icon) # has to come after logo_icon
 
@@ -146,18 +170,21 @@ py.display.set_icon(logo_icon) # has to come after logo_icon
 background = Background()
 player = py.sprite.GroupSingle()
 player.add(Player())
-enemy = py.sprite.GroupSingle()
-enemy.add(Enemy())
+enemy = py.sprite.Group()
+enemy.add(Enemy(200, 200))
 cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
 fps_counter = FPS_Counter()
 
 #Global Variables
 bullets = []
+ex = 300
+ey = 300
 
 # Game loop
 while game_active:
     x, y = py.mouse.get_pos() # needed for b in bullets
+    camX, camY = player.sprite.x, player.sprite.y
 
     for event in py.event.get():
         if event.type == py.QUIT:
@@ -165,14 +192,19 @@ while game_active:
             exit()
 
     screen.fill(BG_COLOR)
-    background.update(player.sprite.x, player.sprite.y)
+    background.update(camX, camY)
     player.update()
     player.draw(screen)
-    enemy.update(player.sprite.x, player.sprite.y)
+    enemy.update(camX, camY)
     enemy.draw(screen)
     cursor.update()
     cursor.draw(screen)
     fps_counter.update()
+
+    if py.time.get_ticks() // 5000 > len(enemy):
+        enemy.add(Enemy(ex, ey))
+        ex += 100
+        ey += 100
 
     for b in bullets:
         b.update(b)
