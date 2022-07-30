@@ -41,9 +41,13 @@ class Player(py.sprite.Sprite):
         if pressed[py.K_s]:
             self.speed -= 0.1
         if pressed[py.K_a]:
-            self.angle += 1
+            self.angle += 2
         if pressed[py.K_d]:
-            self.angle -= 1
+            self.angle -= 2
+        if self.speed > 10:
+            self.speed = 10
+        if self.speed < 1:
+            self.speed = 1
         self.vx = self.speed * math.sin(math.radians(self.angle))
         self.vy = self.speed * math.cos(math.radians(self.angle))
         self.x -= self.vx
@@ -55,7 +59,7 @@ class Player(py.sprite.Sprite):
         if py.mouse.get_pressed() == (1, 0, 0):
             self.load += 1
             if self.load > LOAD_SPEED:
-                b = Bullet(x, y)
+                b = Bullet(self.angle)
                 bullets.append(b)
                 self.load = 0
         else:
@@ -66,14 +70,12 @@ class Player(py.sprite.Sprite):
         self.shoot()
 
 class Bullet():
-    def __init__(self, mx, my):
+    def __init__(self, a):
         super().__init__()
         self.x = SCX
         self.y = SCY
-        self.mx = mx
-        self.my = my
         self.rect = py.Rect(self.x, self.y, BULLET_SIZE, BULLET_SIZE)
-        self.angle = math.atan2(self.my - self.y, self.mx - self.x)
+        self.angle = math.radians(a)
         self.dx = math.cos(self.angle) * BULLET_SPEED
         self.dy = math.sin(self.angle) * BULLET_SPEED
         self.begin = py.time.get_ticks()
@@ -83,8 +85,8 @@ class Bullet():
             bullets.pop(b)
 
     def move(self):
-        self.x = self.x + self.dx
-        self.y = self.y + self.dy
+        self.y -= math.cos(self.angle) * BULLET_SPEED
+        self.x -= math.sin(self.angle) * BULLET_SPEED
         self.rect.x = int(self.x)
         self.rect.y = int(self.y)
 
@@ -158,8 +160,8 @@ ey = 300
 
 # Game loop
 while game_active:
-    x, y = py.mouse.get_pos() # needed for b in bullets
     camX, camY = player.sprite.x, player.sprite.y
+    x, y = py.mouse.get_pos() # needed for b in bullets
 
     for event in py.event.get():
         if event.type == py.QUIT:
