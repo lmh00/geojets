@@ -5,7 +5,7 @@ import math
 # Classes
 class Background():
     def update(self, camX, camY):
-        screen.blit(map, BG_POS, (-SCX + camX, -SCY + camY, SW, SH))
+        screen.blit(map, BACKGROUND_POSITION, (-SCREEN_CENTER_X + camX, -SCREEN_CENTER_Y + camY, SCREEN_WIDTH, SCREEN_HEIGHT))
 
 class Cursor(py.sprite.Sprite):
     def __init__(self):
@@ -27,43 +27,43 @@ class Player(py.sprite.Sprite):
         super().__init__()
         self.img = jet_icon
         self.image = self.img
-        self.rect = self.image.get_rect(center = (SCX, SCY))
+        self.rect = self.image.get_rect(center = (SCREEN_CENTER_X, SCREEN_CENTER_Y))
         self.x = 5000
         self.y = 5000
         self.angle = 0
-        self.speed = PLYR_SPEED
-        self.load = LOAD_SPEED
+        self.speed = PLAYER_SPEED
+        self.fire = BULLET_FIRERATE
 
     def move(self):
         pressed = py.key.get_pressed()
         if pressed[py.K_w]:
-            self.speed += 0.1
+            self.speed += PLAYER_SPEED_RATE
         if pressed[py.K_s]:
-            self.speed -= 0.1
+            self.speed -= PLAYER_SPEED_RATE
         if pressed[py.K_a]:
-            self.angle += 2
+            self.angle += PLAYER_TURN_RATE
         if pressed[py.K_d]:
-            self.angle -= 2
-        if self.speed > 10:
-            self.speed = 10
-        if self.speed < 1:
-            self.speed = 1
+            self.angle -= PLAYER_TURN_RATE
+        if self.speed > PLAYER_MAX_SPEED:
+            self.speed = PLAYER_MAX_SPEED
+        if self.speed < PLAYER_MIN_SPEED:
+            self.speed = PLAYER_MIN_SPEED
         self.vx = self.speed * math.sin(math.radians(self.angle))
         self.vy = self.speed * math.cos(math.radians(self.angle))
         self.x -= self.vx
         self.y -= self.vy
         self.image = py.transform.rotate(self.img, self.angle)
-        self.rect = self.image.get_rect(center = (SCX, SCY))
+        self.rect = self.image.get_rect(center = (SCREEN_CENTER_X, SCREEN_CENTER_Y))
 
     def shoot(self):
         if py.mouse.get_pressed() == (1, 0, 0):
-            self.load += 1
-            if self.load > LOAD_SPEED:
+            self.fire += 1
+            if self.fire > BULLET_FIRERATE:
                 b = Bullet(self.angle)
                 bullets.append(b)
-                self.load = 0
+                self.fire = 0
         else:
-            self.load = LOAD_SPEED
+            self.fire = BULLET_FIRERATE
 
     def update(self):
         self.move()
@@ -72,8 +72,8 @@ class Player(py.sprite.Sprite):
 class Bullet():
     def __init__(self, a):
         super().__init__()
-        self.x = SCX
-        self.y = SCY
+        self.x = SCREEN_CENTER_X
+        self.y = SCREEN_CENTER_Y
         self.rect = py.Rect(self.x, self.y, BULLET_SIZE, BULLET_SIZE)
         self.angle = math.radians(a)
         self.dx = math.cos(self.angle) * BULLET_SPEED
@@ -105,23 +105,27 @@ class Enemy(py.sprite.Sprite):
         self.y = y
         self.img = jet_icon
         self.image = self.img
-        self.rect = self.image.get_rect(center = ((self.x + SCX), (self.y + SCY)))
-        self.speed = PLYR_SPEED
-        self.load = LOAD_SPEED
+        self.rect = self.image.get_rect(center = ((self.x + SCREEN_CENTER_X), (self.y + SCREEN_CENTER_Y)))
+        self.speed = PLAYER_SPEED
+        self.fire = BULLET_FIRERATE
 
     def update(self, camX, camY):
-        self.rect = self.image.get_rect(center = ((self.x + SCX) - camX, (self.y + SCY) - camY))
+        self.rect = self.image.get_rect(center = ((self.x + SCREEN_CENTER_X) - camX, (self.y + SCREEN_CENTER_Y) - camY))
 
 # Settings
-SW = 1200
-SH = 800
-SCX = SW / 2
-SCY = SH / 2
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 800
+SCREEN_CENTER_X = SCREEN_WIDTH / 2
+SCREEN_CENTER_Y = SCREEN_HEIGHT / 2
 FPS = 60
-BG_COLOR = 'red'
-BG_POS = (0, 0)
-PLYR_SPEED = 5
-LOAD_SPEED = 15
+BACKGROUND_COLOR = 'red'
+BACKGROUND_POSITION = (0, 0)
+PLAYER_SPEED = 5
+PLAYER_SPEED_RATE = 0.1
+PLAYER_TURN_RATE = 2
+PLAYER_MAX_SPEED = 10
+PLAYER_MIN_SPEED = 1
+BULLET_FIRERATE = 15
 BULLET_COLOR = 'black'
 BULLET_SIZE = 4
 BULLET_SPEED = 20
@@ -129,7 +133,7 @@ BULLET_LIFE = 1000
 
 # Init
 py.init()
-screen = py.display.set_mode((SW, SH), py.HWSURFACE | py.DOUBLEBUF | py.SCALED, vsync=1)
+screen = py.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), py.HWSURFACE | py.DOUBLEBUF | py.SCALED, vsync=1)
 font = py.font.SysFont("Arial" , 18 , bold = True)
 clock = py.time.Clock()
 py.mouse.set_visible(False)
@@ -168,7 +172,7 @@ while game_active:
             py.quit()
             exit()
 
-    screen.fill(BG_COLOR)
+    screen.fill(BACKGROUND_COLOR)
     background.update(camX, camY)
     player.update()
     player.draw(screen)
