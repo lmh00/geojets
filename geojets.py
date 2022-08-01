@@ -59,7 +59,7 @@ class Player(py.sprite.Sprite):
         if py.mouse.get_pressed() == (1, 0, 0):
             self.fire += 1
             if self.fire > BULLET_FIRERATE:
-                bullets.add(Bullet(self.angle))
+                bullet.add(Bullet(self.angle))
                 self.fire = 0
         else:
             self.fire = BULLET_FIRERATE
@@ -89,12 +89,17 @@ class Bullet(py.sprite.Sprite):
         self.rect.x = int(self.x)
         self.rect.y = int(self.y)
 
+    def collide(self):
+        if py.sprite.groupcollide(enemy, bullet, True, True):
+            print('killed')
+
     def draw(self):
         py.draw.rect(screen, BULLET_COLOR, self.rect)
 
     def update(self):
         self.end()
         self.move()
+        self.collide()
         self.draw()
 
 class Enemy(py.sprite.Sprite):
@@ -154,7 +159,7 @@ enemy = py.sprite.Group()
 enemy.add(Enemy(200, 200))
 cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
-bullets = py.sprite.Group()
+bullet = py.sprite.Group()
 fps_counter = FPS_Counter()
 
 #Global Variables
@@ -179,10 +184,10 @@ while game_active:
     enemy.draw(screen)
     cursor.update()
     cursor.draw(screen)
-    bullets.update()
+    bullet.update()
     fps_counter.update()
 
-    if py.time.get_ticks() // 5000 > len(enemy):
+    if py.time.get_ticks() // 1000 > len(enemy):
         enemy.add(Enemy(ex, ey))
         ex += 100
         ey += 100
