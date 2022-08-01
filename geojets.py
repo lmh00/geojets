@@ -91,7 +91,7 @@ class Bullet(py.sprite.Sprite):
 
     def collide(self):
         if py.sprite.groupcollide(enemy, bullet, True, True):
-            print('killed')
+            score.score += 1
 
     def draw(self):
         py.draw.rect(screen, BULLET_COLOR, self.rect)
@@ -101,6 +101,15 @@ class Bullet(py.sprite.Sprite):
         self.move()
         self.collide()
         self.draw()
+
+class Score():
+    def __init__(self):
+        super().__init__()
+        self.score = 0
+
+    def update(self):
+        show_score = font.render(str(self.score) , 1, py.Color("BLACK"))
+        screen.blit(show_score, (0, 50))
 
 class Enemy(py.sprite.Sprite):
     def __init__(self, x, y):
@@ -160,6 +169,7 @@ enemy.add(Enemy(200, 200))
 cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
 bullet = py.sprite.Group()
+score = Score()
 fps_counter = FPS_Counter()
 
 #Global Variables
@@ -185,6 +195,7 @@ while game_active:
     cursor.update()
     cursor.draw(screen)
     bullet.update()
+    score.update()
     fps_counter.update()
 
     if py.time.get_ticks() // 1000 > len(enemy):
