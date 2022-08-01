@@ -59,8 +59,7 @@ class Player(py.sprite.Sprite):
         if py.mouse.get_pressed() == (1, 0, 0):
             self.fire += 1
             if self.fire > BULLET_FIRERATE:
-                b = Bullet(self.angle)
-                bullets.append(b)
+                bullets.add(Bullet(self.angle))
                 self.fire = 0
         else:
             self.fire = BULLET_FIRERATE
@@ -69,20 +68,20 @@ class Player(py.sprite.Sprite):
         self.move()
         self.shoot()
 
-class Bullet():
-    def __init__(self, a):
+class Bullet(py.sprite.Sprite):
+    def __init__(self, angle):
         super().__init__()
         self.x = SCREEN_CENTER_X
         self.y = SCREEN_CENTER_Y
         self.rect = py.Rect(self.x, self.y, BULLET_SIZE, BULLET_SIZE)
-        self.angle = math.radians(a)
+        self.angle = math.radians(angle)
         self.dx = math.cos(self.angle) * BULLET_SPEED
         self.dy = math.sin(self.angle) * BULLET_SPEED
         self.begin = py.time.get_ticks()
 
-    def end(self, b):
+    def end(self):
         if py.time.get_ticks() > (self.begin + BULLET_LIFE):
-            bullets.pop(b)
+            self.kill()
 
     def move(self):
         self.y -= math.cos(self.angle) * BULLET_SPEED
@@ -93,8 +92,8 @@ class Bullet():
     def draw(self):
         py.draw.rect(screen, BULLET_COLOR, self.rect)
 
-    def update(self, b):
-        self.end(bullets.index(b))
+    def update(self):
+        self.end()
         self.move()
         self.draw()
 
@@ -155,12 +154,12 @@ enemy = py.sprite.Group()
 enemy.add(Enemy(200, 200))
 cursor = py.sprite.GroupSingle()
 cursor.add(Cursor())
+bullets = py.sprite.Group()
 fps_counter = FPS_Counter()
 
 #Global Variables
-bullets = []
-ex = 300
-ey = 300
+ex = 5100
+ey = 5100
 
 # Game loop
 while game_active:
@@ -180,15 +179,13 @@ while game_active:
     enemy.draw(screen)
     cursor.update()
     cursor.draw(screen)
+    bullets.update()
     fps_counter.update()
 
     if py.time.get_ticks() // 5000 > len(enemy):
         enemy.add(Enemy(ex, ey))
         ex += 100
         ey += 100
-
-    for b in bullets:
-        b.update(b)
 
     py.display.update()
     py.event.pump()
